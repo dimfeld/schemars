@@ -1,5 +1,39 @@
 # Changelog
 
+## [0.8.11] - 2022-10-02
+### Added:
+- Replace auto-inferred trait bounds with bounds specified in `#[schemars(bound = "...")]` attribute
+
+### Changed:
+- Derived `JsonSchema` now respects attributes on unit enum variants (https://github.com/GREsau/schemars/pull/152)
+- Minimum supported rust version is now 1.45.0
+
+## [0.8.10] - 2022-05-17
+- Undo "Support generic default values in default attributes (https://github.com/GREsau/schemars/pull/83)" as it inadvertently introduced a breaking change (https://github.com/GREsau/schemars/issues/144)
+
+## [0.8.9] - 2022-05-16
+### Added:
+- ~~Support generic default values in `default` attributes (https://github.com/GREsau/schemars/pull/83)~~
+    - ⚠️ **This inadvertently introduced a breaking change and was removed in 0.8.10**
+- Add missing MIT licence text for usage of code from regex_syntax crate (https://github.com/GREsau/schemars/pull/132)
+- Support uuid v1 and arrayvec 0.7 via feature flags `uuid1` and `arrayvec07` (https://github.com/GREsau/schemars/pull/142)
+    - This also adds `uuid08` and `arrayvec05` feature flags for the previously supported versions of these crates. The existing `uuid` and `arrayvec` flags are still supported for backward-compatibility, but they are **deprecated**.
+    - Similarly, `indexmap1` feature flag is added, and `indexmap` flag is **deprecated**.
+
+## [0.8.8] - 2021-11-25
+### Added:
+- Implement `JsonSchema` for types from `rust_decimal` and `bigdecimal` crates (https://github.com/GREsau/schemars/pull/101)
+
+### Fixed:
+- Fixes for internally tagged enums and flattening additional_properties (https://github.com/GREsau/schemars/pull/113)
+
+## [0.8.7] - 2021-11-14
+### Added:
+- Implement `JsonSchema` for `EnumSet` (https://github.com/GREsau/schemars/pull/92)
+
+### Fixed:
+- Do not cause compile error when using a default value that doesn't implement `Serialize` (https://github.com/GREsau/schemars/issues/115)
+
 ## [0.8.6] - 2021-09-26
 ### Changed:
 - Use `oneOf` instead of `anyOf` for enums when possible (https://github.com/GREsau/schemars/issues/108)

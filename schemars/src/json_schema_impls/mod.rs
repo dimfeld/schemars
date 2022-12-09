@@ -36,8 +36,10 @@ macro_rules! forward_impl {
 }
 
 mod array;
-#[cfg(feature = "arrayvec")]
-mod arrayvec;
+#[cfg(feature = "arrayvec05")]
+mod arrayvec05;
+#[cfg(feature = "arrayvec07")]
+mod arrayvec07;
 #[cfg(std_atomic)]
 mod atomic;
 #[cfg(feature = "bytes")]
@@ -45,8 +47,12 @@ mod bytes;
 #[cfg(feature = "chrono")]
 mod chrono;
 mod core;
+#[cfg(any(feature = "rust_decimal", feature = "bigdecimal"))]
+mod decimal;
 #[cfg(feature = "either")]
 mod either;
+#[cfg(feature = "enumset")]
+mod enumset;
 mod ffi;
 #[cfg(feature = "indexmap")]
 mod indexmap;
@@ -64,6 +70,8 @@ mod time;
 mod tuple;
 #[cfg(feature = "url")]
 mod url;
-#[cfg(feature = "uuid")]
-mod uuid;
+#[cfg(feature = "uuid08")]
+mod uuid08;
+#[cfg(feature = "uuid1")]
+mod uuid1;
 mod wrapper;

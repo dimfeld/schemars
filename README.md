@@ -3,7 +3,7 @@
 [![CI Build](https://img.shields.io/github/workflow/status/GREsau/schemars/CI?logo=GitHub)](https://github.com/GREsau/schemars/actions)
 [![Crates.io](https://img.shields.io/crates/v/schemars)](https://crates.io/crates/schemars)
 [![Docs](https://docs.rs/schemars/badge.svg)](https://docs.rs/schemars)
-[![rustc 1.37+](https://img.shields.io/badge/schemars-rustc_1.37+-lightgray.svg)](https://blog.rust-lang.org/2019/08/15/Rust-1.37.0.html)
+[![rustc 1.45+](https://img.shields.io/badge/schemars-rustc_1.45+-lightgray.svg)](https://blog.rust-lang.org/2020/07/16/Rust-1.45.0.html)
 
 Generate JSON Schema documents from Rust code
 
@@ -264,13 +264,24 @@ println!("{}", serde_json::to_string_pretty(&schema).unwrap());
 - `impl_json_schema` - implements `JsonSchema` for Schemars types themselves
 - `preserve_order` - keep the order of struct fields in `Schema` and `SchemaObject`
 
-## Optional Dependencies
-Schemars can implement `JsonSchema` on types from several popular crates, enabled via optional dependencies (dependency versions are shown in brackets):
-- [`chrono`](https://crates.io/crates/chrono) (^0.4)
-- [`indexmap`](https://crates.io/crates/indexmap) (^1.2)
-- [`either`](https://crates.io/crates/either) (^1.3)
-- [`uuid`](https://crates.io/crates/uuid) (^0.8)
-- [`smallvec`](https://crates.io/crates/smallvec) (^1.0)
-- [`arrayvec`](https://crates.io/crates/arrayvec) (^0.5)
-- [`url`](https://crates.io/crates/url) (^2.0)
-- [`bytes`](https://crates.io/crates/bytes) (^1.0)
+Schemars can implement `JsonSchema` on types from several popular crates, enabled via feature flags (dependency versions are shown in brackets):
+- `chrono` - [chrono](https://crates.io/crates/chrono) (^0.4)
+- `indexmap1` - [indexmap](https://crates.io/crates/indexmap) (^1.2)
+- `either` - [either](https://crates.io/crates/either) (^1.3)
+- `uuid08` - [uuid](https://crates.io/crates/uuid) (^0.8)
+- `uuid1` - [uuid](https://crates.io/crates/uuid) (^1.0)
+- `smallvec` - [smallvec](https://crates.io/crates/smallvec) (^1.0)
+- `arrayvec05` - [arrayvec](https://crates.io/crates/arrayvec) (^0.5)
+- `arrayvec07` - [arrayvec](https://crates.io/crates/arrayvec) (^0.7)
+- `url` - [url](https://crates.io/crates/url) (^2.0)
+- `bytes` - [bytes](https://crates.io/crates/bytes) (^1.0)
+- `enumset` - [enumset](https://crates.io/crates/enumset) (^1.0)
+- `rust_decimal` - [rust_decimal](https://crates.io/crates/rust_decimal) (^1.0)
+- `bigdecimal` - [bigdecimal](https://crates.io/crates/bigdecimal) (^0.3)
+
+For example, to implement `JsonSchema` on types from `chrono`, enable it as a feature in the `schemars` dependency in your `Cargo.toml` like so:
+
+```toml
+[dependencies]
+schemars = { version = "0.8", features = ["chrono"] }
+```

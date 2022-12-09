@@ -149,8 +149,7 @@ fn expr_for_external_tagged_enum<'a>(
             unique_names.insert(v.name());
             count += 1;
         })
-        .partition(|v| v.is_unit() && v.attrs.with.is_none());
-
+        .partition(|v| v.is_unit() && v.attrs.is_default());
     let unit_names = unit_variants.iter().map(|v| v.name());
     let unit_schema = schema_object(quote! {
         instance_type: Some(schemars::schema::InstanceType::String.into()),
@@ -168,25 +167,38 @@ fn expr_for_external_tagged_enum<'a>(
 
     schemas.extend(complex_variants.into_iter().map(|variant| {
         let name = variant.name();
-        let sub_schema = expr_for_untagged_enum_variant(variant, deny_unknown_fields);
 
-        let mut schema_expr = schema_object(quote! {
-            instance_type: Some(schemars::schema::InstanceType::Object.into()),
-            object: Some(Box::new(schemars::schema::ObjectValidation {
-                properties: {
-                    let mut props = schemars::Map::new();
-                    props.insert(#name.to_owned(), #sub_schema);
-                    props
-                },
-                required: {
-                    let mut required = schemars::Set::new();
-                    required.insert(#name.to_owned());
-                    required
-                },
-                additional_properties: Some(Box::new(false.into())),
-                ..Default::default()
-            })),
-        });
+        let mut schema_expr = if variant.is_unit() && variant.attrs.with.is_none() {
+            schema_object(quote! {
+                instance_type: Some(schemars::schema::InstanceType::String.into()),
+                enum_values: Some(vec![#name.into()]),
+            })
+        } else {
+            let sub_schema = expr_for_untagged_enum_variant(variant, deny_unknown_fields);
+            schema_object(quote! {
+                instance_type: Some(schemars::schema::InstanceType::Object.into()),
+                object: Some(Box::new(schemars::schema::ObjectValidation {
+                    properties: {
+                        let mut props = schemars::Map::new();
+                        props.insert(#name.to_owned(), #sub_schema);
+                        props
+                    },
+                    required: {
+                        let mut required = schemars::Set::new();
+                        required.insert(#name.to_owned());
+                        required
+                    },
+                    // Externally tagged variants must prohibit additional
+                    // properties irrespective of the disposition of
+                    // `deny_unknown_fields`. If additional properties were allowed
+                    // one could easily construct an object that validated against
+                    // multiple variants since here it's the properties rather than
+                    // the values of a property that distingish between variants.
+                    additional_properties: Some(Box::new(false.into())),
+                    ..Default::default()
+                })),
+            })
+        };
 
         variant
             .attrs
@@ -206,6 +218,13 @@ fn expr_for_internal_tagged_enum<'a>(
 ) -> TokenStream {
     let mut unique_names = HashSet::new();
     let mut count = 0;
+    let set_additional_properties = if deny_unknown_fields {
+        quote! {
+            additional_properties: Some(Box::new(false.into())),
+        }
+    } else {
+        TokenStream::new()
+    };
     let variant_schemas = variants
         .map(|variant| {
             unique_names.insert(variant.name());
@@ -230,6 +249,9 @@ fn expr_for_internal_tagged_enum<'a>(
                         required.insert(#tag_name.to_owned());
                         required
                     },
+                    // As we're creating a "wrapper" object, we can honor the
+                    // disposition of deny_unknown_fields.
+                    #set_additional_properties
                     ..Default::default()
                 })),
             });
@@ -328,6 +350,8 @@ fn expr_for_adjacent_tagged_enum<'a>(
                         #add_content_to_required
                         required
                     },
+                    // As we're creating a "wrapper" object, we can honor the
+                    // disposition of deny_unknown_fields.
                     #set_additional_properties
                     ..Default::default()
                 })),

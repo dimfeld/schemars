@@ -5,17 +5,19 @@ on: [push, pull_request, workflow_dispatch]
 jobs:
   ci:
     runs-on: ubuntu-latest
+    env:
+      # work-around https://github.com/rust-lang/cargo/issues/10303
+      CARGO_NET_GIT_FETCH_WITH_CLI: ${{ matrix.rust == '1.45.0' }}
     strategy:
       matrix:
         rust:
-          - 1.37.0
+          - 1.45.0
           - stable
           - beta
           - nightly
         include:
-          - rust: 1.37.0
-            # exclude ui_test as the output is slightly different in rustc 1.37
-            test_features: "--features impl_json_schema,chrono,indexmap,either,uuid,smallvec,arrayvec"
+          - rust: 1.45.0          
+            test_features: "--features impl_json_schema"
             allow_failure: false
           - rust: stable
             test_features: "--all-features"
@@ -33,13 +35,14 @@ jobs:
         with:
           profile: minimal
           toolchain: ${{ matrix.rust }}
-          override: true
+          override: true          
+      - if: matrix.rust == '1.45.0'
+        # work-around https://github.com/serde-rs/serde/issues/2255 and similar crate/rustc compatibility issues
+        run: cargo update -p serde --precise 1.0.142 && cargo update -p once_cell --precise 1.10.0 && cargo update -p pretty_assertions --precise 1.2.1
       - name: Check with no feature flags
         run: cargo check --verbose --no-default-features
         continue-on-error: ${{ matrix.allow_failure }}
         working-directory: ./schemars
-      - if: matrix.rust == '1.37.0'
-        run: cargo update -p indexmap --precise 1.6.2
       - name: Run tests
         run: cargo test --verbose ${{ matrix.test_features }} --no-fail-fast
         continue-on-error: ${{ matrix.allow_failure }}
